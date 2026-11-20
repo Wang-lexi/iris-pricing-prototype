@@ -29,53 +29,75 @@ def _wrap(label: str, width: int = 12) -> str:
 
 
 def waterfall_chart(wf: pd.DataFrame, height: int = 560) -> go.Figure:
-    """Waterfall drawn with explicit bars (full control of colour and position).
+    """Staircase waterfall that flows down from one horizontal level.
 
-    Blue bars are running totals drawn from zero; orange bars are deductions that
-    hang from the previous level; the last bar (pocket margin) is teal.
+    - First bar (list revenue) and last bar (pocket margin) stand on zero.
+    - Every deduction is an orange bar that starts where the previous step ended and
+      drops down, so the chart reads left to right as a descending staircase.
+    - Subtotals in the middle (invoice revenue, pocket revenue) are drawn only as a
+      horizontal level line, not as a tall column.
     """
+    n = len(wf)
+    xs = list(range(n))
     labels = [_wrap(s) for s in wf["label"]]
-    groups = {"Running total": ([], [], [], [], []),
-              "Deduction": ([], [], [], [], []),
-              "Final pocket margin": ([], [], [], [], [])}
-    colors = {"Running total": TOTAL_COLOR, "Deduction": LOSS_COLOR,
-              "Final pocket margin": MARGIN_COLOR}
+    amounts = list(wf["amount_cad"])
+    pcts = list(wf["pct_of_list"])
+    kinds = list(wf["kind"])
 
+    ends, drops, levels_marks = {"x": [], "y": [], "t": [], "h": []}, \
+        {"x": [], "y": [], "base": [], "t": [], "h": []}, {"x": [], "y": [], "t": []}
     level = 0.0
-    levels = []  # running level after each step, used for connector lines
-    last = len(wf) - 1
-    for i, (amt, pct, kind) in enumerate(zip(wf["amount_cad"], wf["pct_of_list"], wf["kind"])):
-        if kind == "total":
-            base, height_, level = 0.0, amt, amt
-            name = "Final pocket margin" if i == last else "Running total"
+    level_after = []
+    for i in range(n):
+        amt, pct = amounts[i], pcts[i]
+        hover = f"{wf['label'].iloc[i]}<br>{amt:,.0f} CAD<br>{pct:.2%} of list revenue"
+        text = f"{money(amt)}<br>{pct:.1%}"
+        if kinds[i] == "total":
+            level = amt
+            if i in (0, n - 1):  # start and end: full bars on zero
+                ends["x"].append(i); ends["y"].append(amt)
+                ends["t"].append(text); ends["h"].append(hover)
+            else:                 # subtotal: a level line only
+                levels_marks["x"].append(i); levels_marks["y"].append(amt)
+                levels_marks["t"].append(text)
         else:
             before, level = level, level + amt
-            base, height_ = min(before, level), abs(amt)
-            name = "Deduction"
-        levels.append(level)
-        xs, ys, bases, texts, hovers = groups[name]
-        xs.append(labels[i]); ys.append(height_); bases.append(base)
-        texts.append(f"{money(amt)}<br>{pct:.1%}")
-        hovers.append(f"{wf['label'].iloc[i]}<br>{amt:,.0f} CAD<br>{pct:.2%} of list revenue")
+            drops["x"].append(i); drops["y"].append(abs(amt))
+            drops["base"].append(min(before, level))
+            drops["t"].append(text); drops["h"].append(hover)
+        level_after.append(level)
 
     fig = go.Figure()
-    for name, (xs, ys, bases, texts, hovers) in groups.items():
-        if not xs:
-            continue
-        fig.add_bar(name=name, x=xs, y=ys, base=bases, marker_color=colors[name],
-                    text=texts, textposition="outside", cliponaxis=False,
-                    hovertext=hovers, hoverinfo="text", textfont=dict(size=12))
-    for i in range(len(levels) - 1):  # thin connector lines between bars
-        fig.add_shape(type="line", x0=i + 0.4, x1=i + 0.6, y0=levels[i], y1=levels[i],
+    fig.add_bar(name="Start / end total", x=ends["x"], y=ends["y"], width=0.8,
+                marker_color=[TOTAL_COLOR] + [MARGIN_COLOR] * (len(ends["x"]) - 1),
+                text=ends["t"], textposition="outside", cliponaxis=False,
+                hovertext=ends["h"], hoverinfo="text")
+    fig.add_bar(name="Deduction (money taken out)", x=drops["x"], y=drops["y"],
+                base=drops["base"], width=0.8, marker_color=LOSS_COLOR,
+                text=drops["t"], textposition="outside", cliponaxis=False,
+                hovertext=drops["h"], hoverinfo="text")
+    for j, (x, y) in enumerate(zip(levels_marks["x"], levels_marks["y"])):
+        fig.add_scatter(x=[x - 0.4, x + 0.4], y=[y, y], mode="lines",
+                        line=dict(color=TOTAL_COLOR, width=4),
+                        name="Subtotal level", legendgroup="level",
+                        showlegend=(j == 0), hoverinfo="skip")
+    top = max(max(ends["y"], default=0), max(levels_marks["y"], default=0))
+    fig.add_scatter(x=levels_marks["x"], y=[y + top * 0.045 for y in levels_marks["y"]],
+                    mode="text", text=levels_marks["t"], textposition="middle center",
+                    showlegend=False, hoverinfo="skip")
+    for i in range(n - 1):  # thin horizontal connectors: the staircase "flow"
+        fig.add_shape(type="line", x0=i + 0.4, x1=i + 0.6,
+                      y0=level_after[i], y1=level_after[i],
                       line=dict(color=GRID, width=1))
+
     fig.update_layout(
-        barmode="overlay", bargap=0.12, height=height,
-        margin=dict(t=50, b=10, l=10, r=10),
-        legend=dict(orientation="h", y=1.08, x=0),
-        yaxis=dict(title="CAD", gridcolor=GRID, tickformat="$,.2s", rangemode="tozero",
-                   automargin=True),
-        xaxis=dict(categoryorder="array", categoryarray=labels, tickangle=0,
-                   tickfont=dict(size=12), automargin=True),
+        height=height, bargap=0, margin=dict(t=50, b=10, l=10, r=10),
+        legend=dict(orientation="h", y=1.1, x=0),
+        yaxis=dict(title="CAD", gridcolor=GRID, tickformat="$,.2s", automargin=True,
+                   range=[0, top * 1.15]),
+        xaxis=dict(tickmode="array", tickvals=xs, ticktext=labels, tickangle=0,
+                   tickfont=dict(size=12), automargin=True, range=[-0.6, n - 0.4],
+                   showgrid=False),
     )
     return fig
 

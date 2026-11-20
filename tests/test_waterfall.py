@@ -129,11 +129,19 @@ def test_compare_steps_identical_groups_have_zero_difference(df):
     assert compare_steps(wf, wf)["difference_pp"].abs().max() == 0
 
 
-def test_waterfall_chart_bars_sit_at_correct_heights(df):
+def test_waterfall_chart_is_a_descending_staircase(df):
     wf = waterfall(df)
     fig = waterfall_chart(wf)
-    heights = {t.name: list(t.y) for t in fig.data}
-    assert heights["Running total"][0] == pytest.approx(wf["amount_cad"].iloc[0])  # list from 0
-    assert heights["Final pocket margin"][0] == pytest.approx(wf["amount_cad"].iloc[-1])
-    assert all(b == 0 for b in fig.data[0].base)  # running totals start at zero
+    ends = next(t for t in fig.data if t.name == "Start / end total")
+    drops = next(t for t in fig.data if t.name.startswith("Deduction"))
+    # start and end bars stand on zero and have the right heights
+    assert list(ends.y) == pytest.approx([wf["amount_cad"].iloc[0], wf["amount_cad"].iloc[-1]])
+    # each deduction hangs from the level left by the previous step: walk the staircase
+    level = wf["amount_cad"].iloc[0]
+    for step, amt in zip(wf["step"], wf["amount_cad"]):
+        if step in ("list", "invoice", "pocket", "margin"):
+            continue
+        level += amt
+    assert level == pytest.approx(wf["amount_cad"].iloc[-1])
+    assert all(b + h <= wf["amount_cad"].iloc[0] + 1e-6 for b, h in zip(drops.base, drops.y))
     assert len(compare_chart(compare_steps(wf, wf), "a", "b").data) == 2
