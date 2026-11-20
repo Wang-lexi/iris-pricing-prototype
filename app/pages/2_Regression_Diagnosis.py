@@ -29,7 +29,7 @@ from src.regression import (
     flag_exceptions,
     load_dataset,
 )
-from src.regression_charts import actual_vs_predicted_chart, drivers_chart, residual_histogram
+from src.regression_charts import actual_vs_predicted_chart, drivers_chart
 from src.visualization import money, waterfall_chart
 
 st.set_page_config(page_title="Regression Diagnosis", layout="wide")
@@ -69,18 +69,19 @@ fp = _fingerprint()
 data = load(fp)
 
 # ---------------------------------------------------------------- sidebar
-st.sidebar.header("Model settings")
+st.sidebar.header("Settings")
 # Settings are shared with the Root Cause page: keep them when switching pages.
 for _key, _default in SHARED_DEFAULTS.items():
     st.session_state.setdefault(_key, _default)
     st.session_state[_key] = st.session_state[_key]
-product_level = st.sidebar.radio(
-    "Product enters the model as", ["category", "id"], format_func=str.capitalize,
-    key="model_product_level",
-    help="Category: 5 groups. ID: 50 separate products (more detail, noisier estimates).")
-test_share = st.sidebar.slider("Share of latest transactions held out for testing",
-                               0.10, 0.40, step=0.05, format="%.2f", key="model_test_share")
-top_share = st.sidebar.slider("Flag the top share of residuals", 0.01, 0.20, step=0.01,
+with st.sidebar.expander("Advanced model settings"):
+    product_level = st.radio(
+        "Product enters the model as", ["category", "id"], format_func=str.capitalize,
+        key="model_product_level",
+        help="Category: 5 groups. ID: 50 separate products (more detail, noisier estimates).")
+    test_share = st.slider("Share of latest transactions held out for testing",
+                           0.10, 0.40, step=0.05, format="%.2f", key="model_test_share")
+top_share = st.sidebar.slider("Flag the top share of unusual transactions", 0.01, 0.20, step=0.01,
                               format="%.2f", key="model_top_share",
                               help="0.05 flags the 5% of transactions with the largest "
                                    "positive residuals.")
@@ -89,8 +90,7 @@ result = fit(fp, test_share, product_level)
 flagged, threshold = flag_exceptions(result.scored, top_share)
 
 st.sidebar.header("Filters")
-st.sidebar.caption("Filters narrow the charts and tables. Model performance is always for "
-                   "the whole data set.")
+st.sidebar.caption("Filters narrow the charts and tables. The model itself always uses all data.")
 customers = flagged.drop_duplicates("customer_id").set_index("customer_id")["customer_name"]
 products = flagged.drop_duplicates("product_id").set_index("product_id")["product_category"]
 sel_customers = st.sidebar.multiselect(
@@ -110,93 +110,100 @@ st.sidebar.caption(f"{len(view):,} of {len(flagged):,} transactions selected")
 
 # ----------------------------------------------------------------- header
 st.title("Regression Diagnosis")
-st.warning(
-    "**Synthetic data, statistical screening only.** This page shows which transactions "
-    "received a larger price reduction than the model expects from quantity, customer tier, "
-    "product, channel, region and month. A large residual is a reason to look, not proof of "
-    "a pricing mistake or of recoverable profit.")
+st.info("Synthetic data. A flagged transaction is a reason to look, not proof of a pricing mistake.")
 st.markdown(
-    "**Jump to:** [1. Model](#model) · [2. Actual vs predicted](#fit) · [3. Drivers](#drivers) · "
-    "[4. Exceptions](#exceptions) · [5. Investigate](#investigate)")
+    "**Jump to:** [1. The model](#model) · [2. Unusual transactions](#fit) · "
+    "[3. What drives the reduction](#drivers) · [4. Exceptions](#exceptions) · "
+    "[5. Investigate](#investigate)")
 
 # ---------------------------------------------------------------- 1. model
-st.header("1. Model performance", anchor="model")
-st.caption(
-    "Ordinary least squares on the earliest transactions (training period, up to "
-    f"{result.cutoff_date.date()}); the latest transactions are the test set, which the model "
-    "never saw. Error is in percentage points (pp) of list revenue.")
-train, test = result.metrics.set_index("sample").loc["Train"], result.metrics.set_index("sample").loc["Test"]
-c1, c2, c3, c4 = st.columns(4)
-c1.metric("R² (test)", f"{test['r_squared']:.3f}", f"train {train['r_squared']:.3f}",
-          delta_color="off", delta_arrow="off")
-c2.metric("MAE (test)", f"{test['mae'] * 100:.2f} pp", f"train {train['mae'] * 100:.2f} pp",
-          delta_color="off", delta_arrow="off")
-c3.metric("RMSE (test)", f"{test['rmse'] * 100:.2f} pp", f"train {train['rmse'] * 100:.2f} pp",
-          delta_color="off", delta_arrow="off")
-c4.metric("Observations", f"{int(train['observations']):,} train",
-          f"{int(test['observations']):,} test", delta_color="off", delta_arrow="off")
-st.markdown(f"**Fitted equation:** `{equation_text(result)}`")
-with st.expander("What the model does and does not do"):
-    base = baseline_levels(data, product_level)
+st.header("1. The model", anchor="model")
+st.markdown(
+    "**The idea:** transactions that look alike should get similar price reductions. We predict "
+    "the reduction each transaction *should* get from normal business factors, then look at the "
+    "ones that got much more.")
+st.latex(r"y = \beta_0 + \beta_1 x_1 + \beta_2 x_2 + \beta_3 x_3 + \beta_4 x_4 "
+         r"+ \beta_5 x_5 + \beta_6 x_6 + \varepsilon")
+st.markdown(
+    "| Symbol | Variable | What it means |\n|---|---|---|\n"
+    "| **y** | Price reduction rate | (List revenue - Pocket revenue) / List revenue: the share of the "
+    "list price given away through discounts, rebates and allowances. This is what we predict. |\n"
+    "| **x₁** | Quantity | Units bought (in log form). Bigger orders usually earn bigger discounts. |\n"
+    "| **x₂** | Customer tier | Small, Mid-Market, Large or Strategic. Bigger customers negotiate more. |\n"
+    "| **x₃** | Product | Product category. Different product lines carry different margins. |\n"
+    "| **x₄** | Sales channel | Direct or Distributor. |\n"
+    "| **x₅** | Province | Where the customer is located. |\n"
+    "| **x₆** | Month | Month of the sale: a drift in discounts over the year. |\n"
+    "| **β₀ ... β₆** | Effects | How much each variable moves the reduction. The model learns them "
+    "from the data (ordinary least squares). |\n"
+    "| **ε** | Residual | What the model cannot explain: **actual minus predicted**. A large "
+    "positive ε means more reduction than normal, so we look at it. |")
+with st.expander("Model details: accuracy, coefficients, assumptions"):
+    metrics = result.metrics.set_index("sample")
     st.markdown(
-        "- **Dependent variable:** (list revenue - pocket revenue) / list revenue, the same "
-        "pocket revenue as the Price Waterfall.\n"
-        "- **Predictors:** ln(quantity), month number (a linear trend), and dummy variables "
-        "for customer tier, product, sales channel and province. Baselines: "
-        + ", ".join(f"{k} = {v}" for k, v in base.items()) + ".\n"
-        "- **Not used:** pocket revenue, discount amounts, rebates, allowances, manual price "
-        "overrides and approved discount limits. They determine the target or are kept for "
-        "the investigation afterwards.\n"
-        "- **Month** is a trend rather than 12 dummies because the test months come after the "
-        "training months, so month dummies could not be estimated for them.\n"
-        "- **Limits:** a linear model on synthetic data; it cannot see deal-specific context "
-        "(strategic account, competitive bid, negotiation), so a large residual can be "
-        "legitimate. Test R² can differ from train R² just because the test months happen to be "
-        "less noisy.")
-with st.expander("Data checks"):
-    st.dataframe(data_checks(data), hide_index=True, width="stretch")
-
-st.divider()
-
-# ----------------------------------------------------------------- 2. fit
-st.header("2. Actual vs predicted reduction rate", anchor="fit")
-st.caption("Each dot is a transaction. On the dashed line the reduction is as expected; "
-           "above it the transaction received more reduction than the model predicts.")
-if view.empty:
-    st.warning("No transactions match the current filters.")
-    st.stop()
-st.plotly_chart(actual_vs_predicted_chart(view), width="stretch")
-left, right = st.columns([2, 1])
-with left:
-    st.markdown("**Residual distribution** (all transactions)")
-    st.plotly_chart(residual_histogram(flagged, threshold), width="stretch")
-with right:
-    st.metric("Residual threshold", pp(threshold),
-              f"top {top_share:.0%} of residuals", delta_color="off", delta_arrow="off")
-    st.metric("Statistical outliers", f"{int(flagged['statistical_exception'].sum()):,}",
-              f"{int(view['statistical_exception'].sum()):,} in current filter",
-              delta_color="off", delta_arrow="off")
-    st.metric("Contract policy exceptions", f"{int(flagged['policy_exception'].sum()):,}",
-              f"{int(view['policy_exception'].sum()):,} in current filter",
-              delta_color="off", delta_arrow="off")
-
-st.divider()
-
-# -------------------------------------------------------------- 3. drivers
-st.header("3. Regression drivers", anchor="drivers")
-st.caption("Effect on the reduction rate in percentage points of list revenue, compared with "
-           "the baseline level, other factors held constant. Whiskers are 95% confidence "
-           "intervals. Orange raises the reduction, blue lowers it.")
-st.plotly_chart(drivers_chart(result.coefficients), width="stretch")
-with st.expander("Coefficient table"):
+        f"Fitted on the earliest transactions (up to {result.cutoff_date.date()}) and tested on "
+        "the latest ones, which the model never saw.")
+    st.dataframe(pd.DataFrame({
+        "Sample": metrics.index, "Transactions": metrics["observations"].astype(int).values,
+        "R²": metrics["r_squared"].values, "MAE (pp)": metrics["mae"].values * 100,
+        "RMSE (pp)": metrics["rmse"].values * 100}),
+        hide_index=True, width="stretch",
+        column_config={"R²": st.column_config.NumberColumn(format="%.3f"),
+                       "MAE (pp)": st.column_config.NumberColumn(format="%.2f"),
+                       "RMSE (pp)": st.column_config.NumberColumn(format="%.2f")})
+    st.markdown(f"**Fitted equation:** `{equation_text(result)}`")
     table = result.coefficients[["label", "coef_pp", "ci_low_pp", "ci_high_pp", "p_value"]].copy()
     table.columns = ["Driver", "Effect (pp)", "CI low (pp)", "CI high (pp)", "p-value"]
     st.dataframe(table, hide_index=True, width="stretch",
                  column_config={c: st.column_config.NumberColumn(format="%.2f")
                                 for c in ["Effect (pp)", "CI low (pp)", "CI high (pp)"]}
                  | {"p-value": st.column_config.NumberColumn(format="%.3f")})
-    st.caption("Quantity is the effect of doubling the quantity. Month is the effect of one "
-               "month later.")
+    base = baseline_levels(data, product_level)
+    st.markdown(
+        "- Each effect is in percentage points of list revenue, against a baseline: "
+        + ", ".join(f"{k} = {v}" for k, v in base.items()) + ". Quantity is the effect of "
+        "doubling the order; month is the effect of one month later.\n"
+        "- **Not used as predictors:** pocket revenue, discount amounts, rebates, allowances, "
+        "manual price overrides and approved discount limits. They build the target or are kept "
+        "for the investigation afterwards.\n"
+        "- **Limits:** a linear model on synthetic data. It cannot see deal context "
+        "(negotiation, competitive bids), so a large residual can be legitimate.")
+    st.markdown("**Data checks**")
+    st.dataframe(data_checks(data), hide_index=True, width="stretch")
+
+st.divider()
+
+# ----------------------------------------------------------------- 2. fit
+st.header("2. Which transactions got more than expected?", anchor="fit")
+st.caption("Each dot is one transaction. Dots on the dashed line got the reduction the model "
+           "expects; dots well above it got more.")
+if view.empty:
+    st.warning("No transactions match the current filters.")
+    st.stop()
+st.plotly_chart(actual_vs_predicted_chart(view), width="stretch")
+st.markdown(
+    f":orange[**{int(view['statistical_exception'].sum()):,} transactions**] are unusually high "
+    f"(the top {top_share:.0%} of residuals). "
+    f":red[**{int(view['policy_exception'].sum()):,}**] have an on-invoice discount above their "
+    "contract limit. Both checks are independent.")
+
+st.divider()
+
+# -------------------------------------------------------------- 3. drivers
+st.header("3. What drives the reduction?", anchor="drivers")
+coefs = result.coefficients
+shown = coefs[coefs["significant"]].copy()
+shown["label"] = shown["label"].str.replace("Quantity: quantity x2", "Quantity: doubling the order")
+no_effect = [g for g, part in coefs.groupby("group") if not part["significant"].any()]
+if not shown.empty:
+    top = shown.loc[shown["coef_pp"].abs().idxmax()]
+    st.caption(
+        f"Each bar shows how much a factor raises (orange) or lowers (blue) the reduction, in "
+        f"percentage points of list price, against a baseline. The biggest driver is "
+        f"**{top['group'].lower()}**.")
+    st.plotly_chart(drivers_chart(shown, show_ci=False), width="stretch")
+if no_effect:
+    st.caption("No clear effect on the reduction: " + ", ".join(g.lower() for g in no_effect) + ".")
 
 st.divider()
 

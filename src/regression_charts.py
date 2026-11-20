@@ -57,33 +57,22 @@ def actual_vs_predicted_chart(df: pd.DataFrame, height: int = 520) -> go.Figure:
     return fig
 
 
-def drivers_chart(coefs: pd.DataFrame, height: int | None = None) -> go.Figure:
-    """Effect of each driver in percentage points of list revenue, with 95% intervals."""
+def drivers_chart(coefs: pd.DataFrame, height: int | None = None, show_ci: bool = True) -> go.Figure:
+    """Effect of each driver in percentage points of list revenue (optionally with 95% intervals)."""
     c = coefs.reindex(coefs["coef_pp"].abs().sort_values().index)
     colors = [POSITIVE_COLOR if v > 0 else NEGATIVE_COLOR for v in c["coef_pp"]]
     fig = go.Figure(go.Bar(
         x=c["coef_pp"], y=c["label"], orientation="h", marker_color=colors,
-        error_x=dict(type="data", symmetric=False,
-                     array=c["ci_high_pp"] - c["coef_pp"], arrayminus=c["coef_pp"] - c["ci_low_pp"],
-                     color="#444", thickness=1),
+        text=[f"{v:+.1f} pp" for v in c["coef_pp"]], textposition="outside", cliponaxis=False,
         hovertemplate="%{y}<br>%{x:+.2f} pp<extra></extra>"))
+    if show_ci:
+        fig.update_traces(error_x=dict(
+            type="data", symmetric=False, array=c["ci_high_pp"] - c["coef_pp"],
+            arrayminus=c["coef_pp"] - c["ci_low_pp"], color="#444", thickness=1))
     fig.update_layout(
         height=height or max(360, 22 * len(c) + 80), margin=dict(l=10, r=10, t=10, b=10),
         plot_bgcolor="white", showlegend=False,
         xaxis=dict(title="Effect on reduction rate (percentage points of list revenue)",
                    gridcolor=GRID, zerolinecolor="#555"),
         yaxis=dict(automargin=True))
-    return fig
-
-
-def residual_histogram(df: pd.DataFrame, threshold: float, height: int = 300) -> go.Figure:
-    """Distribution of residuals with the flagging threshold."""
-    fig = go.Figure(go.Histogram(x=df[RESIDUAL] * 100, nbinsx=60, marker_color=NORMAL_COLOR))
-    fig.add_vline(x=threshold * 100, line_dash="dash", line_color=OUTLIER_COLOR,
-                  annotation_text=f"flag threshold {threshold * 100:+.1f} pp",
-                  annotation_position="top")
-    fig.update_layout(
-        height=height, margin=dict(l=10, r=10, t=30, b=10), plot_bgcolor="white",
-        xaxis=dict(title="Residual = actual - predicted (percentage points)", gridcolor=GRID),
-        yaxis=dict(title="Transactions", gridcolor=GRID), bargap=0.05)
     return fig
