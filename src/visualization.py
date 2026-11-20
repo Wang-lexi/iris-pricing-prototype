@@ -9,11 +9,16 @@ GRID = "rgba(128,128,128,0.25)"
 
 
 def money(x: float) -> str:
-    return f"${x / 1e6:,.2f}M" if abs(x) >= 1e6 else f"${x / 1e3:,.0f}K"
+    sign = "-" if x < 0 else ""
+    x = abs(x)
+    return f"{sign}${x / 1e6:,.2f}M" if x >= 1e6 else f"{sign}${x / 1e3:,.0f}K"
 
 
 def waterfall_chart(wf: pd.DataFrame) -> go.Figure:
-    measure = ["total" if k == "total" else "relative" for k in wf["kind"]]
+    # First bar is the starting value ("absolute"); later subtotals ("total") are
+    # drawn from zero up to the running sum; deductions are "relative" steps.
+    measure = ["relative" if k == "delta" else ("absolute" if i == 0 else "total")
+               for i, k in enumerate(wf["kind"])]
     text = [f"{money(a)}<br>{p:.1%}" for a, p in zip(wf["amount_cad"], wf["pct_of_list"])]
     fig = go.Figure(go.Waterfall(
         x=wf["label"], y=wf["amount_cad"], measure=measure,
@@ -22,6 +27,7 @@ def waterfall_chart(wf: pd.DataFrame) -> go.Figure:
         increasing={"marker": {"color": TOTAL_COLOR}},
         decreasing={"marker": {"color": LOSS_COLOR}},
         totals={"marker": {"color": TOTAL_COLOR}},
+        # 'absolute' bars take the "increasing" colour, so both are the same blue.
         hovertemplate="%{x}<br>%{y:$,.0f}<extra></extra>",
     ))
     fig.update_layout(
