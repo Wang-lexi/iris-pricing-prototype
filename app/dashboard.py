@@ -7,6 +7,7 @@ Run from the repo root:
     streamlit run app/dashboard.py
 """
 
+import hashlib
 import sys
 from pathlib import Path
 
@@ -16,6 +17,7 @@ import pandas as pd
 import streamlit as st
 
 from src.pricing_analysis import (
+    DATA_PATH,
     add_row_metrics,
     compare_steps,
     leakage_sources,
@@ -47,7 +49,8 @@ HOW_TO_READ = (
 
 
 @st.cache_data
-def load() -> pd.DataFrame:
+def load(data_fingerprint: str) -> pd.DataFrame:
+    """Cached per data file content: a changed CSV can never be served from a stale cache."""
     return add_row_metrics(load_input())
 
 
@@ -82,7 +85,7 @@ def waterfall_table(wf: pd.DataFrame) -> None:
     st.dataframe(table, hide_index=True, width="stretch")
 
 
-df_all = load()
+df_all = load(hashlib.md5(DATA_PATH.read_bytes()).hexdigest())
 
 # ---------------------------------------------------------------- sidebar
 st.sidebar.header("Filters")
