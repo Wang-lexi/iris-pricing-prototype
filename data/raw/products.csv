@@ -1,0 +1,51 @@
+product_id,sku,product_category,description,standard_list_unit_price_cad,baseline_unit_cogs_cad,product_differentiation,lead_time_days,commodity_exposure
+P001,IND-0001,Industrial Valves,Industrial Valves model 001 (Synthetic),279.95,194.92,Standard,7,Aluminum
+P002,IND-0002,Industrial Valves,Industrial Valves model 002 (Synthetic),526.92,298.69,Standard,7,Steel
+P003,IND-0003,Industrial Valves,Industrial Valves model 003 (Synthetic),177.51,101.27,Standard,7,Polymer
+P004,IND-0004,Industrial Valves,Industrial Valves model 004 (Synthetic),100.44,51.26,Standard,3,Mixed
+P005,IND-0005,Industrial Valves,Industrial Valves model 005 (Synthetic),308.33,171.76,Standard,14,Polymer
+P006,IND-0006,Industrial Valves,Industrial Valves model 006 (Synthetic),56.96,39.29,Standard,3,Mixed
+P007,IND-0007,Industrial Valves,Industrial Valves model 007 (Synthetic),164.03,86.24,Standard,5,Steel
+P008,IND-0008,Industrial Valves,Industrial Valves model 008 (Synthetic),379.51,223.97,Standard,21,Steel
+P009,IND-0009,Industrial Valves,Industrial Valves model 009 (Synthetic),107.42,58.01,Standard,14,Steel
+P010,IND-0010,Industrial Valves,Industrial Valves model 010 (Synthetic),172.77,91.18,Specialized,14,Steel
+P011,PRO-0011,Process Pumps,Process Pumps model 011 (Synthetic),305.73,193.06,Standard,14,Polymer
+P012,PRO-0012,Process Pumps,Process Pumps model 012 (Synthetic),222.94,151.1,Specialized,3,Polymer
+P013,PRO-0013,Process Pumps,Process Pumps model 013 (Synthetic),545.44,331.88,Standard,5,Steel
+P014,PRO-0014,Process Pumps,Process Pumps model 014 (Synthetic),440.79,209.24,Standard,14,Mixed
+P015,PRO-0015,Process Pumps,Process Pumps model 015 (Synthetic),533.03,377.56,Specialized,7,Mixed
+P016,PRO-0016,Process Pumps,Process Pumps model 016 (Synthetic),505.33,281.74,Standard,7,Steel
+P017,PRO-0017,Process Pumps,Process Pumps model 017 (Synthetic),149.35,93.75,Standard,7,Steel
+P018,PRO-0018,Process Pumps,Process Pumps model 018 (Synthetic),431.98,260.08,Standard,5,Aluminum
+P019,PRO-0019,Process Pumps,Process Pumps model 019 (Synthetic),429.77,236.71,Specialized,21,Steel
+P020,PRO-0020,Process Pumps,Process Pumps model 020 (Synthetic),303.57,218.75,Specialized,7,Steel
+P021,PIP-0021,Pipe Fittings,Pipe Fittings model 021 (Synthetic),81.72,47.93,Specialized,21,Aluminum
+P022,PIP-0022,Pipe Fittings,Pipe Fittings model 022 (Synthetic),226.47,131.94,Standard,5,Steel
+P023,PIP-0023,Pipe Fittings,Pipe Fittings model 023 (Synthetic),71.14,41.21,Specialized,14,Aluminum
+P024,PIP-0024,Pipe Fittings,Pipe Fittings model 024 (Synthetic),73.52,51.14,Standard,5,Aluminum
+P025,PIP-0025,Pipe Fittings,Pipe Fittings model 025 (Synthetic),111.45,61.11,Specialized,5,Aluminum
+P026,PIP-0026,Pipe Fittings,Pipe Fittings model 026 (Synthetic),51.04,35.72,Standard,21,Mixed
+P027,PIP-0027,Pipe Fittings,Pipe Fittings model 027 (Synthetic),54.46,27.84,Specialized,3,Polymer
+P028,PIP-0028,Pipe Fittings,Pipe Fittings model 028 (Synthetic),183.74,125.71,Specialized,7,Steel
+P029,PIP-0029,Pipe Fittings,Pipe Fittings model 029 (Synthetic),49.96,24.91,Standard,5,Polymer
+P030,PIP-0030,Pipe Fittings,Pipe Fittings model 030 (Synthetic),156.95,82.89,Standard,21,Mixed
+P031,HYD-0031,Hydraulic Components,Hydraulic Components model 031 (Synthetic),437.17,245.29,Specialized,7,Aluminum
+P032,HYD-0032,Hydraulic Components,Hydraulic Components model 032 (Synthetic),306.45,218.44,Standard,3,Mixed
+P033,HYD-0033,Hydraulic Components,Hydraulic Components model 033 (Synthetic),321.27,168.08,Standard,14,Steel
+P034,HYD-0034,Hydraulic Components,Hydraulic Components model 034 (Synthetic),121.53,81.91,Specialized,3,Polymer
+P035,HYD-0035,Hydraulic Components,Hydraulic Components model 035 (Synthetic),427.2,214.01,Standard,14,Polymer
+P036,HYD-0036,Hydraulic Components,Hydraulic Components model 036 (Synthetic),540.94,346.86,Standard,21,Mixed
+P037,HYD-0037,Hydraulic Components,Hydraulic Components model 037 (Synthetic),210.14,102.93,Specialized,21,Mixed
+P038,HYD-0038,Hydraulic Components,Hydraulic Components model 038 (Synthetic),557.87,269.0,Specialized,7,Polymer
+P039,HYD-0039,Hydraulic Components,Hydraulic Components model 039 (Synthetic),72.05,46.32,Standard,3,Steel
+P040,HYD-0040,Hydraulic Components,Hydraulic Components model 040 (Synthetic),261.07,150.77,Standard,7,Aluminum
+P041,SEA-0041,Seals & Gaskets,Seals & Gaskets model 041 (Synthetic),22.48,11.4,Specialized,7,Aluminum
+P042,SEA-0042,Seals & Gaskets,Seals & Gaskets model 042 (Synthetic),179.54,90.88,Specialized,21,Aluminum
+P043,SEA-0043,Seals & Gaskets,Seals & Gaskets model 043 (Synthetic),63.86,42.11,Standard,7,Aluminum
+P044,SEA-0044,Seals & Gaskets,Seals & Gaskets model 044 (Synthetic),195.36,100.9,Standard,14,Mixed
+P045,SEA-0045,Seals & Gaskets,Seals & Gaskets model 045 (Synthetic),216.12,103.65,Standard,3,Steel
+P046,SEA-0046,Seals & Gaskets,Seals & Gaskets model 046 (Synthetic),232.65,131.04,Standard,5,Polymer
+P047,SEA-0047,Seals & Gaskets,Seals & Gaskets model 047 (Synthetic),43.51,21.02,Standard,3,Aluminum
+P048,SEA-0048,Seals & Gaskets,Seals & Gaskets model 048 (Synthetic),197.19,125.85,Standard,7,Steel
+P049,SEA-0049,Seals & Gaskets,Seals & Gaskets model 049 (Synthetic),239.37,152.03,Standard,7,Steel
+P050,SEA-0050,Seals & Gaskets,Seals & Gaskets model 050 (Synthetic),200.17,129.91,Specialized,3,Steel

@@ -1,0 +1,101 @@
+customer_id,customer_name,industry,province,country,customer_tier,sales_channel,relationship_years,annual_revenue_band_cad,payment_terms_days,sales_rep_id
+C001,Customer 001 (Synthetic),Construction Equipment,British Columbia,Canada,Small,Distributor,6,Under 2M,15,S05
+C002,Customer 002 (Synthetic),Water Infrastructure,British Columbia,Canada,Mid-Market,Distributor,8,2M-10M,15,S11
+C003,Customer 003 (Synthetic),Industrial Distribution,British Columbia,Canada,Mid-Market,Distributor,16,2M-10M,45,S05
+C004,Customer 004 (Synthetic),Industrial Distribution,Quebec,Canada,Small,Direct,7,Under 2M,60,S01
+C005,Customer 005 (Synthetic),Energy Services,Ontario,Canada,Small,Direct,1,Under 2M,30,S09
+C006,Customer 006 (Synthetic),Water Infrastructure,Ontario,Canada,Mid-Market,Direct,14,2M-10M,30,S09
+C007,Customer 007 (Synthetic),Food Processing,British Columbia,Canada,Large,Distributor,7,10M-50M,45,S01
+C008,Customer 008 (Synthetic),OEM Machinery,Ontario,Canada,Strategic,Direct,12,50M+,15,S08
+C009,Customer 009 (Synthetic),Construction Equipment,Alberta,Canada,Small,Distributor,2,Under 2M,30,S10
+C010,Customer 010 (Synthetic),Energy Services,British Columbia,Canada,Small,Direct,13,Under 2M,30,S07
+C011,Customer 011 (Synthetic),Industrial Distribution,Alberta,Canada,Mid-Market,Direct,15,2M-10M,30,S12
+C012,Customer 012 (Synthetic),Water Infrastructure,Quebec,Canada,Mid-Market,Distributor,16,2M-10M,60,S11
+C013,Customer 013 (Synthetic),Water Infrastructure,Quebec,Canada,Mid-Market,Direct,15,2M-10M,45,S10
+C014,Customer 014 (Synthetic),Food Processing,Ontario,Canada,Mid-Market,Distributor,7,2M-10M,30,S07
+C015,Customer 015 (Synthetic),Food Processing,Manitoba,Canada,Mid-Market,Direct,1,2M-10M,60,S05
+C016,Customer 016 (Synthetic),Food Processing,Quebec,Canada,Large,Distributor,1,10M-50M,30,S09
+C017,Customer 017 (Synthetic),Industrial Distribution,Nova Scotia,Canada,Mid-Market,Distributor,12,2M-10M,15,S03
+C018,Customer 018 (Synthetic),Energy Services,Alberta,Canada,Small,Distributor,12,Under 2M,15,S04
+C019,Customer 019 (Synthetic),Food Processing,Quebec,Canada,Large,Direct,5,10M-50M,60,S07
+C020,Customer 020 (Synthetic),OEM Machinery,Ontario,Canada,Mid-Market,Direct,1,2M-10M,15,S03
+C021,Customer 021 (Synthetic),Construction Equipment,Ontario,Canada,Large,Distributor,15,10M-50M,60,S11
+C022,Customer 022 (Synthetic),Construction Equipment,Ontario,Canada,Mid-Market,Distributor,15,2M-10M,30,S11
+C023,Customer 023 (Synthetic),Construction Equipment,Alberta,Canada,Mid-Market,Distributor,0,2M-10M,60,S11
+C024,Customer 024 (Synthetic),Energy Services,Ontario,Canada,Large,Direct,1,10M-50M,15,S11
+C025,Customer 025 (Synthetic),Industrial Distribution,Ontario,Canada,Mid-Market,Distributor,10,2M-10M,60,S07
+C026,Customer 026 (Synthetic),OEM Machinery,Ontario,Canada,Small,Direct,14,Under 2M,60,S04
+C027,Customer 027 (Synthetic),Water Infrastructure,Alberta,Canada,Mid-Market,Direct,9,2M-10M,30,S12
+C028,Customer 028 (Synthetic),Construction Equipment,Ontario,Canada,Mid-Market,Direct,7,2M-10M,45,S05
+C029,Customer 029 (Synthetic),Energy Services,Quebec,Canada,Mid-Market,Distributor,1,2M-10M,30,S08
+C030,Customer 030 (Synthetic),Water Infrastructure,Ontario,Canada,Mid-Market,Distributor,6,2M-10M,30,S11
+C031,Customer 031 (Synthetic),Water Infrastructure,Nova Scotia,Canada,Strategic,Direct,16,50M+,60,S08
+C032,Customer 032 (Synthetic),Food Processing,British Columbia,Canada,Mid-Market,Distributor,1,2M-10M,45,S12
+C033,Customer 033 (Synthetic),Construction Equipment,Alberta,Canada,Small,Distributor,12,Under 2M,60,S09
+C034,Customer 034 (Synthetic),Energy Services,Manitoba,Canada,Mid-Market,Direct,11,2M-10M,15,S03
+C035,Customer 035 (Synthetic),Energy Services,Quebec,Canada,Small,Distributor,10,Under 2M,60,S07
+C036,Customer 036 (Synthetic),Construction Equipment,Alberta,Canada,Mid-Market,Distributor,16,2M-10M,30,S12
+C037,Customer 037 (Synthetic),OEM Machinery,Quebec,Canada,Small,Distributor,15,Under 2M,45,S03
+C038,Customer 038 (Synthetic),OEM Machinery,Alberta,Canada,Mid-Market,Direct,5,2M-10M,30,S03
+C039,Customer 039 (Synthetic),OEM Machinery,Ontario,Canada,Mid-Market,Direct,11,2M-10M,60,S10
+C040,Customer 040 (Synthetic),Construction Equipment,Ontario,Canada,Small,Distributor,8,Under 2M,30,S12
+C041,Customer 041 (Synthetic),Construction Equipment,Quebec,Canada,Mid-Market,Distributor,15,2M-10M,60,S10
+C042,Customer 042 (Synthetic),Industrial Distribution,Ontario,Canada,Large,Direct,2,10M-50M,15,S12
+C043,Customer 043 (Synthetic),Energy Services,Ontario,Canada,Mid-Market,Direct,4,2M-10M,45,S08
+C044,Customer 044 (Synthetic),Food Processing,Nova Scotia,Canada,Small,Distributor,10,Under 2M,15,S11
+C045,Customer 045 (Synthetic),Food Processing,Nova Scotia,Canada,Mid-Market,Distributor,9,2M-10M,15,S09
+C046,Customer 046 (Synthetic),OEM Machinery,Ontario,Canada,Mid-Market,Direct,15,2M-10M,30,S01
+C047,Customer 047 (Synthetic),Industrial Distribution,British Columbia,Canada,Mid-Market,Direct,9,2M-10M,30,S06
+C048,Customer 048 (Synthetic),Construction Equipment,Ontario,Canada,Small,Direct,8,Under 2M,15,S08
+C049,Customer 049 (Synthetic),Energy Services,Ontario,Canada,Small,Distributor,3,Under 2M,60,S02
+C050,Customer 050 (Synthetic),Food Processing,Ontario,Canada,Large,Direct,7,10M-50M,60,S11
+C051,Customer 051 (Synthetic),Construction Equipment,Quebec,Canada,Small,Direct,11,Under 2M,60,S12
+C052,Customer 052 (Synthetic),Energy Services,Alberta,Canada,Small,Direct,2,Under 2M,15,S03
+C053,Customer 053 (Synthetic),Energy Services,Nova Scotia,Canada,Large,Distributor,13,10M-50M,30,S02
+C054,Customer 054 (Synthetic),Energy Services,Quebec,Canada,Small,Direct,1,Under 2M,60,S06
+C055,Customer 055 (Synthetic),Construction Equipment,Ontario,Canada,Mid-Market,Distributor,2,2M-10M,30,S01
+C056,Customer 056 (Synthetic),Water Infrastructure,British Columbia,Canada,Large,Direct,14,10M-50M,15,S04
+C057,Customer 057 (Synthetic),Water Infrastructure,Ontario,Canada,Large,Direct,9,10M-50M,60,S07
+C058,Customer 058 (Synthetic),Energy Services,Quebec,Canada,Mid-Market,Direct,10,2M-10M,60,S10
+C059,Customer 059 (Synthetic),Water Infrastructure,Ontario,Canada,Small,Direct,5,Under 2M,30,S04
+C060,Customer 060 (Synthetic),Energy Services,Nova Scotia,Canada,Small,Direct,8,Under 2M,30,S04
+C061,Customer 061 (Synthetic),Water Infrastructure,Quebec,Canada,Mid-Market,Distributor,5,2M-10M,60,S07
+C062,Customer 062 (Synthetic),Energy Services,British Columbia,Canada,Mid-Market,Direct,4,2M-10M,30,S06
+C063,Customer 063 (Synthetic),OEM Machinery,Alberta,Canada,Mid-Market,Direct,8,2M-10M,45,S12
+C064,Customer 064 (Synthetic),Water Infrastructure,Quebec,Canada,Mid-Market,Distributor,7,2M-10M,45,S04
+C065,Customer 065 (Synthetic),Food Processing,Alberta,Canada,Mid-Market,Direct,7,2M-10M,15,S03
+C066,Customer 066 (Synthetic),Food Processing,Ontario,Canada,Mid-Market,Direct,10,2M-10M,45,S10
+C067,Customer 067 (Synthetic),OEM Machinery,Alberta,Canada,Mid-Market,Direct,14,2M-10M,15,S09
+C068,Customer 068 (Synthetic),Food Processing,Quebec,Canada,Mid-Market,Direct,4,2M-10M,15,S06
+C069,Customer 069 (Synthetic),Industrial Distribution,Ontario,Canada,Large,Distributor,11,10M-50M,15,S03
+C070,Customer 070 (Synthetic),OEM Machinery,Quebec,Canada,Mid-Market,Distributor,1,2M-10M,15,S12
+C071,Customer 071 (Synthetic),Water Infrastructure,Alberta,Canada,Strategic,Direct,16,50M+,15,S06
+C072,Customer 072 (Synthetic),OEM Machinery,Ontario,Canada,Mid-Market,Direct,10,2M-10M,15,S01
+C073,Customer 073 (Synthetic),Construction Equipment,Quebec,Canada,Small,Direct,5,Under 2M,15,S06
+C074,Customer 074 (Synthetic),Construction Equipment,Ontario,Canada,Large,Distributor,2,10M-50M,15,S01
+C075,Customer 075 (Synthetic),Water Infrastructure,Ontario,Canada,Small,Direct,2,Under 2M,15,S05
+C076,Customer 076 (Synthetic),Energy Services,Ontario,Canada,Mid-Market,Direct,10,2M-10M,60,S05
+C077,Customer 077 (Synthetic),Industrial Distribution,Ontario,Canada,Mid-Market,Direct,1,2M-10M,60,S02
+C078,Customer 078 (Synthetic),Food Processing,British Columbia,Canada,Mid-Market,Direct,11,2M-10M,15,S11
+C079,Customer 079 (Synthetic),Food Processing,Nova Scotia,Canada,Strategic,Distributor,12,50M+,30,S09
+C080,Customer 080 (Synthetic),Energy Services,Manitoba,Canada,Mid-Market,Direct,14,2M-10M,60,S05
+C081,Customer 081 (Synthetic),OEM Machinery,Quebec,Canada,Small,Direct,12,Under 2M,15,S11
+C082,Customer 082 (Synthetic),Energy Services,Nova Scotia,Canada,Large,Direct,14,10M-50M,15,S09
+C083,Customer 083 (Synthetic),Industrial Distribution,Ontario,Canada,Mid-Market,Distributor,0,2M-10M,60,S11
+C084,Customer 084 (Synthetic),Water Infrastructure,British Columbia,Canada,Mid-Market,Direct,4,2M-10M,15,S06
+C085,Customer 085 (Synthetic),Energy Services,Ontario,Canada,Small,Distributor,15,Under 2M,30,S10
+C086,Customer 086 (Synthetic),Water Infrastructure,Quebec,Canada,Small,Direct,5,Under 2M,45,S12
+C087,Customer 087 (Synthetic),Construction Equipment,Quebec,Canada,Mid-Market,Direct,7,2M-10M,45,S01
+C088,Customer 088 (Synthetic),Water Infrastructure,Ontario,Canada,Small,Direct,11,Under 2M,60,S08
+C089,Customer 089 (Synthetic),Energy Services,Quebec,Canada,Large,Direct,6,10M-50M,45,S05
+C090,Customer 090 (Synthetic),OEM Machinery,British Columbia,Canada,Mid-Market,Direct,10,2M-10M,15,S11
+C091,Customer 091 (Synthetic),Construction Equipment,Quebec,Canada,Mid-Market,Distributor,15,2M-10M,60,S04
+C092,Customer 092 (Synthetic),Construction Equipment,Quebec,Canada,Large,Distributor,9,10M-50M,15,S06
+C093,Customer 093 (Synthetic),Construction Equipment,Ontario,Canada,Large,Distributor,8,10M-50M,30,S04
+C094,Customer 094 (Synthetic),Water Infrastructure,British Columbia,Canada,Large,Distributor,3,10M-50M,45,S02
+C095,Customer 095 (Synthetic),Industrial Distribution,Ontario,Canada,Small,Direct,3,Under 2M,60,S10
+C096,Customer 096 (Synthetic),Industrial Distribution,Quebec,Canada,Small,Distributor,2,Under 2M,45,S11
+C097,Customer 097 (Synthetic),OEM Machinery,Manitoba,Canada,Small,Direct,11,Under 2M,15,S10
+C098,Customer 098 (Synthetic),Energy Services,Ontario,Canada,Small,Distributor,9,Under 2M,30,S09
+C099,Customer 099 (Synthetic),OEM Machinery,Ontario,Canada,Mid-Market,Direct,5,2M-10M,60,S12
+C100,Customer 100 (Synthetic),Construction Equipment,Quebec,Canada,Mid-Market,Distributor,3,2M-10M,45,S04
