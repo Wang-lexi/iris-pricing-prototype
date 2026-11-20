@@ -5,6 +5,8 @@ B2B Manufacturing Pricing Analytics and Price Leakage Detection Prototype
 **Live demo:** https://iris-pricing-prototype.streamlit.app
 (Streamlit app on synthetic data. If it shows an error right after an update, the app host may need a restart.)
 
+**Where this is going:** see the [Project Roadmap](PROJECT_ROADMAP.md): what is built today, the four planned workstreams, and the limits of the prototype. It is also a page in the app.
+
 ## What it does
 
 Takes sales transactions of a B2B manufacturer and shows where list-price revenue leaks away on the way to the money the company actually keeps (the *pocket price*).
@@ -76,11 +78,15 @@ A third page, **Root Cause Simulation**, follows one simple story. It uses the s
 
 The what-if numbers are illustrations, not recovered profit: they assume the customer buys the same quantity at the new price. Rebate and early-payment accruals are contract rates on invoice revenue (as in the data), so they are recomputed when the discount changes. Details and limits: [docs/root_cause_simulation.md](docs/root_cause_simulation.md).
 
+## Project roadmap
+
+[PROJECT_ROADMAP.md](PROJECT_ROADMAP.md) describes the four workstreams (price leakage and dispersion analysis, customer and product micro-segmentation, value-based price guidance, financial opportunity and playbook), what the current prototype already covers, the proposed phases A to D with their dependencies and deliverables, and the limitations. The same content is on the **Project Roadmap** page of the app. Only the price waterfall, regression diagnosis and root cause what-if are built; everything else on the roadmap is planned.
+
 ## Repository layout
 
 ```
 app/dashboard.py          Streamlit page: Price Waterfall
-app/pages/                Streamlit pages: Regression Diagnosis, Root Cause Simulation
+app/pages/                Streamlit pages: Regression Diagnosis, Root Cause Simulation, Project Roadmap
 src/preprocessing.py      integrate the raw tables into one transaction table
 src/pricing_analysis.py   waterfall calculation and transaction-level metrics
 src/visualization.py      the staircase waterfall chart
@@ -88,9 +94,11 @@ src/regression.py         regression diagnosis: dataset, OLS model, residuals, e
 src/regression_charts.py  charts for the regression page
 src/diagnosis.py          root cause components, evidence, scenario simulation
 src/diagnosis_charts.py   charts for the root cause page
+src/roadmap.py            content of the Project Roadmap page (documentation only)
 tests/                    unit tests
 data/                     raw and integrated synthetic data
 docs/                     data dictionary, methodology, prototype notes
+PROJECT_ROADMAP.md        roadmap: completed work, workstreams, phases, limitations
 ```
 
 ## Status and limits
