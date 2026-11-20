@@ -106,6 +106,56 @@ def waterfall(df: pd.DataFrame) -> pd.DataFrame:
     return out
 
 
+def add_row_metrics(df: pd.DataFrame) -> pd.DataFrame:
+    """Per-transaction pocket revenue, leakage, rates and pocket margin.
+
+    Row-level rates are only for looking at single transactions; group-level rates
+    must always come from `waterfall` (ratio of sums).
+    """
+    out = df.copy()
+    off = [c for c, _ in OFF_INVOICE]
+    out["pocket_revenue_cad"] = out[LIST] - out[DISCOUNT] - out[off].sum(axis=1)
+    out["leakage_cad"] = out[LIST] - out["pocket_revenue_cad"]
+    out["pocket_margin_cad"] = (out["pocket_revenue_cad"]
+                                - out[[c for c, _ in COST_TO_SERVE]].sum(axis=1) - out[COGS])
+    list_nonzero = out[LIST].where(out[LIST] != 0)
+    out["discount_rate"] = out[DISCOUNT] / list_nonzero
+    out["leakage_rate"] = out["leakage_cad"] / list_nonzero
+    return out
+
+
+def leakage_sources(wf: pd.DataFrame) -> pd.DataFrame:
+    """The leakage steps (discount and allowances) ranked by size.
+
+    Columns: label, amount_cad (positive), pct_of_list, share_of_leakage.
+    """
+    keys = [DISCOUNT] + [c for c, _ in OFF_INVOICE]
+    src = wf[wf["step"].isin(keys)].copy()
+    src["amount_cad"] = -src["amount_cad"]
+    src["pct_of_list"] = -src["pct_of_list"]
+    total = src["amount_cad"].sum()
+    src["share_of_leakage"] = src["amount_cad"] / total if total else float("nan")
+    return src.sort_values("amount_cad", ascending=False)[
+        ["label", "amount_cad", "pct_of_list", "share_of_leakage"]].reset_index(drop=True)
+
+
+def compare_steps(wf_selected: pd.DataFrame, wf_reference: pd.DataFrame) -> pd.DataFrame:
+    """Each price deduction / cost-to-serve step as a positive fraction of list revenue.
+
+    COGS is left out: it is a cost, not a price concession, and at ~60% of list revenue
+    it would dwarf the few-percent steps this comparison is meant to show.
+    """
+    delta_a = wf_selected[(wf_selected["kind"] == "delta") & (wf_selected["step"] != COGS)]
+    delta_b = wf_reference[wf_reference["kind"] == "delta"].set_index("step")
+    out = pd.DataFrame({
+        "label": delta_a["label"].values,
+        "selected": -delta_a["pct_of_list"].values,
+        "reference": -delta_b.loc[delta_a["step"], "pct_of_list"].values,
+    })
+    out["difference_pp"] = (out["selected"] - out["reference"]) * 100
+    return out
+
+
 def check_against_source(df: pd.DataFrame) -> float | None:
     """Largest gap (CAD) between computed invoice revenue and the source column.
 

@@ -94,3 +94,46 @@ def test_two_files_with_same_role_rejected():
     raw = _raw()
     with pytest.raises(ValueError):
         classify_tables({"a.csv": raw["transactions.csv"], "b.csv": raw["transactions.csv"]})
+
+
+# ---- drill-down helpers and chart ----------------------------------------
+from src.pricing_analysis import add_row_metrics, compare_steps, leakage_sources
+from src.visualization import compare_chart, waterfall_chart
+
+
+def test_row_metrics_add_up_to_waterfall(df):
+    rows = add_row_metrics(df)
+    wf = waterfall(df).set_index("step")["amount_cad"]
+    assert rows["pocket_revenue_cad"].sum() == pytest.approx(wf["pocket"])
+    assert rows["pocket_margin_cad"].sum() == pytest.approx(wf["margin"])
+    assert rows["leakage_cad"].sum() == pytest.approx(wf["list"] - wf["pocket"])
+
+
+def test_single_transaction_waterfall_closes(df):
+    one = add_row_metrics(df).iloc[[0]]
+    wf = waterfall(one).set_index("step")["amount_cad"]
+    deltas = wf.drop(["list", "invoice", "pocket", "margin"])
+    assert wf["list"] + deltas.sum() == pytest.approx(wf["margin"])
+    assert wf["margin"] == pytest.approx(one["pocket_margin_cad"].iloc[0])
+
+
+def test_leakage_sources_sorted_and_share_sums_to_one(df):
+    src = leakage_sources(waterfall(df))
+    assert src["amount_cad"].is_monotonic_decreasing
+    assert src["share_of_leakage"].sum() == pytest.approx(1.0)
+    assert src.iloc[0]["label"] == "On-invoice discount"
+
+
+def test_compare_steps_identical_groups_have_zero_difference(df):
+    wf = waterfall(df)
+    assert compare_steps(wf, wf)["difference_pp"].abs().max() == 0
+
+
+def test_waterfall_chart_bars_sit_at_correct_heights(df):
+    wf = waterfall(df)
+    fig = waterfall_chart(wf)
+    heights = {t.name: list(t.y) for t in fig.data}
+    assert heights["Running total"][0] == pytest.approx(wf["amount_cad"].iloc[0])  # list from 0
+    assert heights["Final pocket margin"][0] == pytest.approx(wf["amount_cad"].iloc[-1])
+    assert all(b == 0 for b in fig.data[0].base)  # running totals start at zero
+    assert len(compare_chart(compare_steps(wf, wf), "a", "b").data) == 2
