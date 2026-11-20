@@ -51,13 +51,30 @@ python -m pytest -q
 
 The tests check that the waterfall reconciles with the source data, that every step adds up to the margin, that groups add up to the total, and that the chart bars sit at the correct heights.
 
+## Regression Diagnosis (Model 2)
+
+A second page, **Regression Diagnosis**, finds transactions whose price reduction is larger than quantity, customer tier, product, channel, region and month explain (Kauppinen, 2014). It appears in the app's sidebar menu next to the waterfall page.
+
+```bash
+streamlit run app/dashboard.py     # then choose "Regression Diagnosis" in the sidebar
+python -m pytest -q                # includes the regression tests
+```
+
+- **Model:** ordinary least squares on `(list revenue - pocket revenue) / list revenue`, trained on the earliest 80% of transactions and tested on the latest 20%. Performance is reported separately for train and test (R², MAE, RMSE).
+- **Page:** model metrics and equation, actual vs predicted scatter, regression drivers with confidence intervals, a table of potential exceptions (filter by customer, product, region), and a selector that shows the Price Waterfall of any chosen transaction.
+- **Two independent flags:** *statistical outlier* (residual in the top 5%, adjustable in the sidebar) and *contract policy exception* (on-invoice discount above the contract's approved maximum).
+- **Read this first:** the data is synthetic, and a large residual is a statistical deviation to investigate, **not** proof of a pricing mistake or of recoverable profit. Equation, variables, assumptions and limits: [docs/regression_diagnosis.md](docs/regression_diagnosis.md).
+
 ## Repository layout
 
 ```
-app/dashboard.py          Streamlit page
+app/dashboard.py          Streamlit page: Price Waterfall
+app/pages/                Streamlit page: Regression Diagnosis
 src/preprocessing.py      integrate the raw tables into one transaction table
 src/pricing_analysis.py   waterfall calculation and transaction-level metrics
 src/visualization.py      the staircase waterfall chart
+src/regression.py         regression diagnosis: dataset, OLS model, residuals, exception flags
+src/regression_charts.py  charts for the regression page
 tests/                    unit tests
 data/                     raw and integrated synthetic data
 docs/                     data dictionary, methodology, prototype notes
@@ -65,4 +82,4 @@ docs/                     data dictionary, methodology, prototype notes
 
 ## Status and limits
 
-This is a prototype. It covers the descriptive **price waterfall** only. It does **not** yet check transactions against contract terms (approved maximum discount, rebate rate), and it does not model price dispersion. Per-transaction comparisons are against peers, not conclusions: a large order can legitimately earn a bigger discount. See [docs/prototype.md](docs/prototype.md).
+This is a prototype. The **price waterfall** is descriptive, and the **regression diagnosis** screens for statistical deviations in price reductions; neither proves a pricing mistake. Per-transaction comparisons are against peers, not conclusions: a large order can legitimately earn a bigger discount. Price optimization, RAG and AI agents are not implemented. See [docs/prototype.md](docs/prototype.md) and [docs/regression_diagnosis.md](docs/regression_diagnosis.md).
