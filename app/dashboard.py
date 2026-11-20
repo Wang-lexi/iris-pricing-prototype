@@ -122,9 +122,9 @@ c1, c2, c3, c4 = st.columns(4)
 c1.metric("List revenue", money(list_rev))
 c2.metric("Pocket revenue", money(pocket))
 c3.metric("Price leakage", money(list_rev - pocket), f"{1 - pocket / list_rev:.1%} of list",
-          delta_color="off")
+          delta_color="off", delta_arrow="off")
 c4.metric("Pocket margin", money(margin), f"{margin / pocket:.1%} of pocket revenue",
-          delta_color="off")
+          delta_color="off", delta_arrow="off")
 
 st.plotly_chart(waterfall_chart(wf), width="stretch")
 
