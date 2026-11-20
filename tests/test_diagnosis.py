@@ -253,7 +253,8 @@ def test_root_cause_page_runs_and_responds_to_the_simulator():
     assert not app.exception
 
     box = [s for s in app.selectbox if s.label == "Transaction"][0]
-    box.select(box.options[0]).run()
+    # AppTest wants the option value (the transaction id), not the displayed label
+    box.select(box.options[0].split(" · ")[0]).run()
     assert not app.exception
     metrics = {m.label: m for m in app.metric}
     assert metrics["Pocket revenue (what-if)"].delta.startswith("+0 CAD")  # nothing changed yet

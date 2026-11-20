@@ -224,7 +224,8 @@ def test_regression_page_runs_without_errors():
     assert len(app.dataframe) >= 3  # data checks, coefficients, exceptions
     # choose a transaction: its Price Waterfall appears
     box = [s for s in app.selectbox if s.label == "Transaction"][0]
-    box.select(box.options[0]).run()
+    # AppTest wants the option value (the transaction id), not the displayed label
+    box.select(box.options[0].split(" · ")[0]).run()
     assert not app.exception
     # a filter that leaves few or no transactions must not crash the page
     app.sidebar.multiselect[2].select("Manitoba").run()
