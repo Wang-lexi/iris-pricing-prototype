@@ -66,7 +66,10 @@ def test_main_driver_for_a_contract_breach_is_the_on_invoice_discount(flagged, b
     driver = main_driver(table)
     assert driver["component"] == "On-invoice discount"
     assert driver["excess_pp"] > 5
-    assert "On-invoice discount" in " ".join(narrative(breach, table))
+    text = " ".join(narrative(breach, table))
+    assert "on-invoice discount" in text
+    assert "Above the contract limit" in text          # a breach says so
+    assert "manual price override was used" in text    # and mentions the override
 
 
 def test_drivers_are_named_for_anomalies_but_rarely_for_ordinary_transactions(flagged):
@@ -87,6 +90,12 @@ def test_the_driver_must_be_clearly_above_peers(flagged):
         table = component_table(r, peers)
         driver = main_driver(table)
         assert (driver is None) == (table["excess_pp"].max() < MIN_DRIVER_EXCESS_PP)
+
+
+def test_narrative_for_a_transaction_within_its_limit_says_so(flagged):
+    row = flagged[flagged["statistical_exception"] & ~flagged["policy_exception"]].iloc[0]
+    text = " ".join(narrative(row, component_table(row, peer_rates(flagged))))
+    assert "Within the contract limit" in text and "Above the contract limit" not in text
 
 
 # ---------------------------------------- the three kinds of evidence stay apart
@@ -247,26 +256,26 @@ def test_root_cause_page_runs_and_responds_to_the_simulator():
     box.select(box.options[0]).run()
     assert not app.exception
     metrics = {m.label: m for m in app.metric}
-    assert metrics["Pocket revenue: simulated"].delta.startswith("+0 CAD")  # nothing changed yet
+    assert metrics["Pocket revenue (what-if)"].delta.startswith("+0 CAD")  # nothing changed yet
 
     # a quick scenario lowers the discount and raises the simulated pocket revenue
     [b for b in app.button if b.label.startswith("Cap at contract limit")][0].click().run()
     assert not app.exception
     metrics = {m.label: m for m in app.metric}
-    assert metrics["Pocket revenue: simulated"].delta.startswith("+")
-    assert not metrics["Pocket revenue: simulated"].delta.startswith("+0 CAD")
+    assert metrics["Pocket revenue (what-if)"].delta.startswith("+")
+    assert not metrics["Pocket revenue (what-if)"].delta.startswith("+0 CAD")
 
     # reset goes back to the original
     [b for b in app.button if b.label == "Reset to original"][0].click().run()
     metrics = {m.label: m for m in app.metric}
-    assert metrics["Pocket revenue: simulated"].delta.startswith("+0 CAD")
+    assert metrics["Pocket revenue (what-if)"].delta.startswith("+0 CAD")
 
     # moving a slider by hand
     app.slider[0].set_value(2.0).run()
     assert not app.exception
 
     # portfolio rule and a filter that narrows the data
-    app.radio[1].set_value("Statistical anomaly").run()
+    [r for r in app.radio if r.label.startswith("Apply to all")][0].set_value("Statistical anomaly").run()
     assert not app.exception
     app.sidebar.multiselect[2].select("Manitoba").run()
     assert not app.exception

@@ -108,24 +108,33 @@ def evidence(row: pd.Series, threshold: float) -> dict[str, dict]:
 
 
 def narrative(row: pd.Series, table: pd.DataFrame) -> list[str]:
-    """Plain-language root cause notes for one transaction."""
-    notes = [f"Total price reduction is **{row[TARGET]:.1%}** of list revenue; the model expects "
-             f"**{row[PREDICTED]:.1%}** for a {row['customer_tier']} customer like this "
-             f"(**{row[RESIDUAL] * 100:+.1f} pp**)."]
+    """The root cause in plain language: how big the gap is, what drives it, contract and override."""
+    tier = row["customer_tier"]
+    gap = row[RESIDUAL] * 100
+    notes = [f"This transaction gave away **{row[TARGET]:.1%}** of the list price. Similar {tier} "
+             f"customers get about **{row[PREDICTED]:.1%}**"
+             + (f" ({gap:.1f} percentage points less)." if gap < 0 else f" ({gap:.1f} points more).")]
     driver = main_driver(table)
     if driver is None:
-        notes.append("No single deduction stands out against tier peers; the difference is spread "
-                     "across components or is small.")
+        notes.append("No single deduction stands out; the difference is small or spread across "
+                     "several.")
     else:
-        notes.append(f"The deduction furthest above {row['customer_tier']}-tier peers is "
-                     f"**{driver['component']}**: {driver['pct_of_list']:.1f}% of list revenue vs "
-                     f"a peer median of {driver['peer_median_pct']:.1f}% "
-                     f"(**{driver['excess_pp']:+.1f} pp**, {driver['amount_cad']:,.0f} CAD, "
-                     f"{driver['share_of_deductions']:.0%} of this transaction's deductions).")
-    others = table[(table["excess_pp"] >= MIN_DRIVER_EXCESS_PP)
-                   & (table["component"] != (driver["component"] if driver is not None else ""))]
-    for _, o in others.iterrows():
-        notes.append(f"Also above peers: {o['component']} ({o['excess_pp']:+.1f} pp).")
+        notes.append(f"The cause is the **{driver['component'].lower()}**: "
+                     f"**{driver['pct_of_list']:.1f}%** of list price, against about "
+                     f"{driver['peer_median_pct']:.1f}% typical for {tier} customers "
+                     f"({driver['amount_cad']:,.0f} CAD).")
+    for _, o in table[(table["excess_pp"] >= MIN_DRIVER_EXCESS_PP)
+                      & (table["component"] != (driver["component"] if driver is not None else ""))].iterrows():
+        notes.append(f"{o['component']} is also above typical ({o['excess_pp']:+.1f} points).")
+    limit = row["approved_max_on_invoice_discount_rate"]
+    if row["policy_exception"]:
+        notes.append(f":red[**Above the contract limit:**] the contract allows at most {limit:.1%}; "
+                     f"this discount is {row['discount_rate']:.1%}.")
+    else:
+        notes.append(f"Within the contract limit (the contract allows up to {limit:.1%}; "
+                     f"this discount is {row['discount_rate']:.1%}).")
+    if row["price_override_used"] == "Y":
+        notes.append("A manual price override was used on this transaction.")
     return notes
 
 

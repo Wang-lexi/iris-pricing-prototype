@@ -24,7 +24,7 @@ def component_excess_chart(table: pd.DataFrame, height: int = 300) -> go.Figure:
                       "peer median %{customdata[1]:.2f}%<extra></extra>"))
     fig.update_layout(
         height=height, margin=dict(l=10, r=40, t=10, b=10), plot_bgcolor="white", showlegend=False,
-        xaxis=dict(title="Deduction as % of list revenue minus tier-peer median (percentage points)",
+        xaxis=dict(title="Above (+) or below (-) what similar customers typically get, in points of list price",
                    gridcolor=GRID, zerolinecolor="#555"),
         yaxis=dict(automargin=True))
     return fig

@@ -7,17 +7,22 @@ revenue and pocket margin would be under different discount assumptions.
 > The data is **synthetic**. Statistical flags are not proof of mistakes, and simulated gains are not
 > recoverable profit.
 
-## Three kinds of statement, kept apart
+## How the page flows
 
-| Label | Source | What it means | What it does not mean |
-|---|---|---|---|
-| **Statistical anomaly** | regression residual in the top share (default 5%) | the reduction is bigger than quantity, tier, product, channel, region and month explain | a mistake; the model cannot see negotiation context |
-| **Contract limit exceeded** | on-invoice discount > contract's approved maximum x list revenue | a rule broken against contract data | that it was unapproved: approval outcomes are not in the data |
-| **Hypothetical improvement** | the simulator | pocket revenue and margin under assumptions the user chooses | recoverable profit |
+1. **Pick** an unusual transaction: one the regression flagged (bigger reduction than similar transactions) or whose
+   discount is above its contract limit. Both lists come from the Regression Diagnosis page, and the two pages share
+   their settings.
+2. **See the cause**: which deduction is far above what similar customers get, in plain sentences, with the
+   contract limit and any manual price override mentioned.
+3. **Try a lower discount** and compare pocket revenue and pocket margin with what actually happened.
+4. **Scale it up**: apply one rule to all unusual transactions in the current filter.
 
-The two flags are independent. On the current data all 75 contract-limit cases are also among the 250
-statistical anomalies, but 175 anomalies are within their contract limit. The page shows each piece of evidence
-in its own box with its own wording, and the price override flag is shown as context only (the model does not use it).
+Two things are deliberately kept honest rather than hidden:
+
+- A flagged transaction is a **question, not a mistake**. The model cannot see negotiation context, and whether an
+  above-limit discount was approved is not in the data.
+- Every simulated number is a **what-if, not recovered profit**. It assumes the customer buys the same quantity at
+  the new price.
 
 ## Root cause: which deduction?
 

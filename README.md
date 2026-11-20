@@ -65,17 +65,16 @@ python -m pytest -q                # includes the regression tests
 - **Two independent flags:** *statistical outlier* (residual in the top 5%, adjustable in the sidebar) and *contract policy exception* (on-invoice discount above the contract's approved maximum).
 - **Read this first:** the data is synthetic, and a large residual is a statistical deviation to investigate, **not** proof of a pricing mistake or of recoverable profit. Equation, variables, assumptions and limits: [docs/regression_diagnosis.md](docs/regression_diagnosis.md).
 
-## Root Cause Diagnosis and Scenario Simulation (Model 3)
+## Root Cause and What-If (Model 3)
 
-A third page, **Root Cause Simulation**, takes the transactions flagged by the Regression Diagnosis, shows which deduction drives each one, and lets a consultant test "what if the discount were lower?" against the Price Waterfall. It uses the same model settings as the Regression Diagnosis page, so both pages flag the same transactions.
+A third page, **Root Cause Simulation**, follows one simple story. It uses the same settings as the Regression Diagnosis page, so both pages flag the same transactions.
 
-1. **Choose** a flagged transaction (statistical anomaly, contract limit exceeded, or either).
-2. **Evidence**: three separate pieces of evidence, never mixed. **Statistical anomaly** is model-based. **Contract limit exceeded** is a rule checked against contract data (whether it was approved is not in the data). Price override is context only.
-3. **Root cause**: each of the five deductions compared with the median of its customer-tier peers, with a plain-language summary.
-4. **Simulate**: adjust the on-invoice discount, rebate rate, early-payment discount, credit and promotional allowances (or use a quick scenario), and compare original and simulated pocket revenue, pocket margin and both waterfalls.
-5. **Portfolio**: apply one rule to every flagged transaction in the current selection and add up the effect.
+1. **Pick** an unusual transaction (bigger price reduction than similar ones, or a discount above its contract limit).
+2. **See the cause**: which deduction is far above what similar customers get, in plain sentences.
+3. **Try a lower discount**: move a slider or click a quick option (cap at the contract limit, typical for the customer tier, back to the expected level) and compare original and what-if pocket revenue, pocket margin and both waterfalls.
+4. **Scale it up**: apply one rule to all unusual transactions and add up the effect.
 
-Everything on the simulation side is **hypothetical**, not recoverable profit: it assumes the customer buys the same quantity at the new price. Rebate and early-payment accruals are contract rates on invoice revenue (as in the data), so they are recomputed when the discount changes. Details and limits: [docs/root_cause_simulation.md](docs/root_cause_simulation.md).
+The what-if numbers are illustrations, not recovered profit: they assume the customer buys the same quantity at the new price. Rebate and early-payment accruals are contract rates on invoice revenue (as in the data), so they are recomputed when the discount changes. Details and limits: [docs/root_cause_simulation.md](docs/root_cause_simulation.md).
 
 ## Repository layout
 
