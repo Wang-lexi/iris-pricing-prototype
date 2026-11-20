@@ -53,6 +53,10 @@ def fit(fingerprint: str, test_share: float, product_level: str):
     return fit_model(load(fingerprint), test_share, product_level)
 
 
+SHARED_DEFAULTS = {"model_product_level": "category", "model_test_share": 0.20,
+                   "model_top_share": 0.05}
+
+
 def pct(x: float) -> str:
     return f"{x:.1%}"
 
@@ -66,13 +70,18 @@ data = load(fp)
 
 # ---------------------------------------------------------------- sidebar
 st.sidebar.header("Model settings")
+# Settings are shared with the Root Cause page: keep them when switching pages.
+for _key, _default in SHARED_DEFAULTS.items():
+    st.session_state.setdefault(_key, _default)
+    st.session_state[_key] = st.session_state[_key]
 product_level = st.sidebar.radio(
     "Product enters the model as", ["category", "id"], format_func=str.capitalize,
+    key="model_product_level",
     help="Category: 5 groups. ID: 50 separate products (more detail, noisier estimates).")
 test_share = st.sidebar.slider("Share of latest transactions held out for testing",
-                               0.10, 0.40, 0.20, 0.05, format="%.2f")
-top_share = st.sidebar.slider("Flag the top share of residuals", 0.01, 0.20, 0.05, 0.01,
-                              format="%.2f",
+                               0.10, 0.40, step=0.05, format="%.2f", key="model_test_share")
+top_share = st.sidebar.slider("Flag the top share of residuals", 0.01, 0.20, step=0.01,
+                              format="%.2f", key="model_top_share",
                               help="0.05 flags the 5% of transactions with the largest "
                                    "positive residuals.")
 

@@ -65,16 +65,30 @@ python -m pytest -q                # includes the regression tests
 - **Two independent flags:** *statistical outlier* (residual in the top 5%, adjustable in the sidebar) and *contract policy exception* (on-invoice discount above the contract's approved maximum).
 - **Read this first:** the data is synthetic, and a large residual is a statistical deviation to investigate, **not** proof of a pricing mistake or of recoverable profit. Equation, variables, assumptions and limits: [docs/regression_diagnosis.md](docs/regression_diagnosis.md).
 
+## Root Cause Diagnosis and Scenario Simulation (Model 3)
+
+A third page, **Root Cause Simulation**, takes the transactions flagged by the Regression Diagnosis, shows which deduction drives each one, and lets a consultant test "what if the discount were lower?" against the Price Waterfall. It uses the same model settings as the Regression Diagnosis page, so both pages flag the same transactions.
+
+1. **Choose** a flagged transaction (statistical anomaly, contract limit exceeded, or either).
+2. **Evidence**: three separate pieces of evidence, never mixed. **Statistical anomaly** is model-based. **Contract limit exceeded** is a rule checked against contract data (whether it was approved is not in the data). Price override is context only.
+3. **Root cause**: each of the five deductions compared with the median of its customer-tier peers, with a plain-language summary.
+4. **Simulate**: adjust the on-invoice discount, rebate rate, early-payment discount, credit and promotional allowances (or use a quick scenario), and compare original and simulated pocket revenue, pocket margin and both waterfalls.
+5. **Portfolio**: apply one rule to every flagged transaction in the current selection and add up the effect.
+
+Everything on the simulation side is **hypothetical**, not recoverable profit: it assumes the customer buys the same quantity at the new price. Rebate and early-payment accruals are contract rates on invoice revenue (as in the data), so they are recomputed when the discount changes. Details and limits: [docs/root_cause_simulation.md](docs/root_cause_simulation.md).
+
 ## Repository layout
 
 ```
 app/dashboard.py          Streamlit page: Price Waterfall
-app/pages/                Streamlit page: Regression Diagnosis
+app/pages/                Streamlit pages: Regression Diagnosis, Root Cause Simulation
 src/preprocessing.py      integrate the raw tables into one transaction table
 src/pricing_analysis.py   waterfall calculation and transaction-level metrics
 src/visualization.py      the staircase waterfall chart
 src/regression.py         regression diagnosis: dataset, OLS model, residuals, exception flags
 src/regression_charts.py  charts for the regression page
+src/diagnosis.py          root cause components, evidence, scenario simulation
+src/diagnosis_charts.py   charts for the root cause page
 tests/                    unit tests
 data/                     raw and integrated synthetic data
 docs/                     data dictionary, methodology, prototype notes
@@ -82,4 +96,4 @@ docs/                     data dictionary, methodology, prototype notes
 
 ## Status and limits
 
-This is a prototype. The **price waterfall** is descriptive, and the **regression diagnosis** screens for statistical deviations in price reductions; neither proves a pricing mistake. Per-transaction comparisons are against peers, not conclusions: a large order can legitimately earn a bigger discount. Price optimization, RAG and AI agents are not implemented. See [docs/prototype.md](docs/prototype.md) and [docs/regression_diagnosis.md](docs/regression_diagnosis.md).
+This is a prototype. The **price waterfall** is descriptive, and the **regression diagnosis** screens for statistical deviations in price reductions; neither proves a pricing mistake. Per-transaction comparisons are against peers, not conclusions: a large order can legitimately earn a bigger discount. The scenario simulation is hypothetical. Price optimization, RAG and AI agents are not implemented. See [docs/prototype.md](docs/prototype.md) and [docs/regression_diagnosis.md](docs/regression_diagnosis.md).
