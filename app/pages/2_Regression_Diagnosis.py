@@ -29,7 +29,7 @@ from src.regression import (
     flag_exceptions,
     load_dataset,
 )
-from src.regression_charts import actual_vs_predicted_chart, drivers_chart
+from src.regression_charts import actual_vs_predicted_chart
 from src.visualization import money, waterfall_chart
 
 st.set_page_config(page_title="Regression Diagnosis", layout="wide")
@@ -113,8 +113,7 @@ st.title("Regression Diagnosis")
 st.info("Synthetic data. A flagged transaction is a reason to look, not proof of a pricing mistake.")
 st.markdown(
     "**Jump to:** [1. The model](#model) · [2. Unusual transactions](#fit) · "
-    "[3. What drives the reduction](#drivers) · [4. Exceptions](#exceptions) · "
-    "[5. Investigate](#investigate)")
+    "[3. Exceptions](#exceptions) · [4. Investigate](#investigate)")
 
 # ---------------------------------------------------------------- 1. model
 st.header("1. The model", anchor="model")
@@ -189,26 +188,8 @@ st.markdown(
 
 st.divider()
 
-# -------------------------------------------------------------- 3. drivers
-st.header("3. What drives the reduction?", anchor="drivers")
-coefs = result.coefficients
-shown = coefs[coefs["significant"]].copy()
-shown["label"] = shown["label"].str.replace("Quantity: quantity x2", "Quantity: doubling the order")
-no_effect = [g for g, part in coefs.groupby("group") if not part["significant"].any()]
-if not shown.empty:
-    top = shown.loc[shown["coef_pp"].abs().idxmax()]
-    st.caption(
-        f"Each bar shows how much a factor raises (orange) or lowers (blue) the reduction, in "
-        f"percentage points of list price, against a baseline. The biggest driver is "
-        f"**{top['group'].lower()}**.")
-    st.plotly_chart(drivers_chart(shown, show_ci=False), width="stretch")
-if no_effect:
-    st.caption("No clear effect on the reduction: " + ", ".join(g.lower() for g in no_effect) + ".")
-
-st.divider()
-
 # ---------------------------------------------------------- 4. exceptions
-st.header("4. Potential pricing exceptions", anchor="exceptions")
+st.header("3. Potential pricing exceptions", anchor="exceptions")
 st.caption("Statistical outliers are transactions with a residual above the threshold. "
            "Contract policy exceptions are transactions whose on-invoice discount is above "
            "the contract's approved limit. The two checks are independent.")
@@ -245,7 +226,7 @@ else:
 st.divider()
 
 # --------------------------------------------------------- 5. investigate
-st.header("5. Investigate a transaction", anchor="investigate")
+st.header("4. Investigate a transaction", anchor="investigate")
 st.caption("Choose a transaction from the table above to see how far it is from the model's "
            "expectation and its Price Waterfall.")
 if exceptions.empty:

@@ -61,7 +61,7 @@ python -m pytest -q                # includes the regression tests
 ```
 
 - **Model:** ordinary least squares on `(list revenue - pocket revenue) / list revenue`, trained on the earliest 80% of transactions and tested on the latest 20%. Performance is reported separately for train and test (R², MAE, RMSE).
-- **Page:** model metrics and equation, actual vs predicted scatter, regression drivers with confidence intervals, a table of potential exceptions (filter by customer, product, region), and a selector that shows the Price Waterfall of any chosen transaction.
+- **Page:** the model equation with each variable explained (accuracy and coefficients in a collapsed section), actual vs predicted scatter, a table of potential exceptions (filter by customer, product, region), and a selector that shows the Price Waterfall of any chosen transaction.
 - **Two independent flags:** *statistical outlier* (residual in the top 5%, adjustable in the sidebar) and *contract policy exception* (on-invoice discount above the contract's approved maximum).
 - **Read this first:** the data is synthetic, and a large residual is a statistical deviation to investigate, **not** proof of a pricing mistake or of recoverable profit. Equation, variables, assumptions and limits: [docs/regression_diagnosis.md](docs/regression_diagnosis.md).
 
