@@ -1,6 +1,6 @@
-"""Streamlit page: pocket price waterfall with a four-level drill-down.
+"""Streamlit page: pocket price waterfall with a three-level drill-down.
 
-    1. Company overview   2. Product   3. Customer vs product   4. Transaction detail
+    1. Company overview   2. Product   3. Transaction detail
 
 Run from the repo root:
 
@@ -24,7 +24,7 @@ from src.pricing_analysis import (
     load_input,
     waterfall,
 )
-from src.visualization import compare_chart, money, waterfall_chart
+from src.visualization import money, waterfall_chart
 
 st.set_page_config(page_title="Pocket Price Waterfall", layout="wide")
 st.markdown(  # use the full page width
@@ -89,7 +89,7 @@ df_all = load(hashlib.md5(DATA_PATH.read_bytes()).hexdigest())
 
 # ---------------------------------------------------------------- sidebar
 st.sidebar.header("Filters")
-st.sidebar.caption("These narrow the data for all four sections.")
+st.sidebar.caption("These narrow the data for all three sections.")
 df = df_all
 for label, col in FILTERS.items():
     chosen = st.sidebar.multiselect(label, sorted(df_all[col].unique()))
@@ -99,11 +99,10 @@ st.sidebar.caption(f"{len(df):,} of {len(df_all):,} transactions selected")
 
 st.title("Pocket Price Waterfall")
 st.caption("Synthetic B2B manufacturing data, CAD, calendar year 2025. "
-           "Four steps: 1 Company, 2 Product, 3 Customer, 4 Transaction.")
+           "Three steps: 1 Company, 2 Product, 3 Transaction.")
 st.markdown(
-    "**Jump to:** [1. Company overview](#1-company-overview) · [2. Product](#2-product) · "
-    "[3. Customer vs product](#3-customer-vs-product) · "
-    "[4. Transaction detail](#4-transaction-detail)")
+    "**Jump to:** [1. Company overview](#overview) · [2. Product](#product) · "
+    "[3. Transaction detail](#transaction)")
 
 if df.empty:
     st.warning("No transactions match the current filters.")
@@ -115,7 +114,7 @@ if wf_all["amount_cad"].iloc[0] <= 0 or amounts(wf_all)["pocket"] <= 0:
     st.stop()
 
 # ---------------------------------------------------- 1. company overview
-st.header("1. Company overview")
+st.header("1. Company overview", anchor="overview")
 st.caption("The whole company by default: where does list-price revenue leak away?")
 kpi_row(wf_all)
 st.plotly_chart(waterfall_chart(wf_all), width="stretch")
@@ -139,13 +138,12 @@ with st.expander("Leakage sources ranked / waterfall table"):
 st.divider()
 
 # -------------------------------------------------------------- 2. product
-st.header("2. Product")
+st.header("2. Product", anchor="product")
 st.caption("Choose a product to analyse only its transactions.")
 cat = df.groupby("product_id")["product_category"].first()
 product = st.selectbox("Product", sorted(df["product_id"].unique()), index=None,
                        format_func=lambda p: f"{p} · {cat[p]}",
                        placeholder="Choose a product")
-customer = None
 if product is None:
     st.info("Choose a product above to see its waterfall.")
 else:
@@ -163,125 +161,69 @@ else:
 
 st.divider()
 
-# ------------------------------------------------------ 3. customer vs product
-st.header("3. Customer vs product")
-st.caption("Choose a customer who bought this product and compare their price structure "
-           "with all customers who bought it.")
+# ------------------------------------------------------ 3. transaction detail
+st.header("3. Transaction detail", anchor="transaction")
+st.caption("Open one transaction of this product to see its full waterfall and how it "
+           "compares with the product's other transactions.")
 if product is None:
     st.info("Choose a product in step 2 first.")
 else:
-    info = df_p.groupby("customer_id").first()
-    customer = st.selectbox(
-        "Customer company",
-        sorted(info.index, key=lambda c: info.loc[c, "customer_name"]),
-        index=None,
-        format_func=lambda c: (f"{info.loc[c, 'customer_name']} · {info.loc[c, 'industry']}"
-                               f" · {info.loc[c, 'customer_tier']}"),
-        placeholder="Choose a customer company", key=f"customer_{product}")
-    if customer is None:
-        st.info("Choose a customer company above to compare.")
+    tx = df_p.sort_values("leakage_rate", ascending=False)
+    by_id = df_p.set_index("transaction_id")
+
+    with st.expander("All transactions of this product (highest leakage first)",
+                     expanded=True):
+        view = tx[["transaction_id", "customer_name", "industry", "transaction_date",
+                   "quantity_units", "discount_rate", "leakage_rate",
+                   "price_override_used", "pocket_margin_cad"]].copy()
+        view["transaction_date"] = pd.to_datetime(view["transaction_date"]).dt.date
+        view["discount_rate"] *= 100
+        view["leakage_rate"] *= 100
+        st.dataframe(
+            view.rename(columns={"discount_rate": "discount_%", "leakage_rate": "leakage_%"}),
+            hide_index=True, width="stretch", height=300,
+            column_config={"discount_%": st.column_config.NumberColumn(format="%.2f"),
+                           "leakage_%": st.column_config.NumberColumn(format="%.2f"),
+                           "pocket_margin_cad": st.column_config.NumberColumn(format="%.0f")})
+
+    tx_id = st.selectbox(
+        "Transaction", list(tx["transaction_id"]), index=None,
+        format_func=lambda t: (f"{t} · {by_id.loc[t, 'customer_name']} · "
+                               f"{pd.to_datetime(by_id.loc[t, 'transaction_date']).date()} · "
+                               f"leakage {by_id.loc[t, 'leakage_rate']:.1%}"),
+        placeholder="Choose a transaction", key=f"tx_{product}")
+    if tx_id is None:
+        st.info("Choose a transaction above to see its waterfall.")
     else:
-        prof = info.loc[customer]
+        row = df_p[df_p["transaction_id"] == tx_id]
+        t = row.iloc[0]
+        wf_t = waterfall(row)
         st.markdown(
-            f"**{prof['customer_name']}** — **Industry:** {prof['industry']} · "
-            f"**Province:** {prof['province']} · **Tier:** {prof['customer_tier']} · "
-            f"**Channel:** {prof['sales_channel']} · "
-            f"**Customer for:** {prof['relationship_years']} yrs · "
-            f"**Annual revenue:** {prof['annual_revenue_band_cad']} CAD · "
-            f"**Payment terms:** {prof['payment_terms_days']} days")
+            f"**{t['customer_name']}** — **Industry:** {t['industry']} · "
+            f"**Province:** {t['province']} · **Tier:** {t['customer_tier']} · "
+            f"**Channel:** {t['sales_channel']} · "
+            f"**Customer for:** {t['relationship_years']} yrs · "
+            f"**Annual revenue:** {t['annual_revenue_band_cad']} CAD · "
+            f"**Payment terms:** {t['payment_terms_days']} days")
+        kpi_row(wf_t, wf_p, "product avg")
+        st.plotly_chart(waterfall_chart(wf_t, height=520), width="stretch")
 
-        groups = {
-            "All other customers of this product": None,
-            "Same industry": "industry",
-            "Same customer tier": "customer_tier",
-            "Same sales channel": "sales_channel",
-            "Same province": "province",
-        }
-        group = st.radio("Compare with", list(groups), horizontal=True,
-                         key=f"group_{product}_{customer}")
-        col = groups[group]
-        others = df_p[df_p["customer_id"] != customer]
-        if col is not None:
-            others = others[others[col] == prof[col]]
-            ref_name = f"other {prof[col]} customers"
-        else:
-            ref_name = "all other customers"
-
-        df_c = df_p[df_p["customer_id"] == customer]
-        wf_c = waterfall(df_c)
-        st.caption(f"{len(df_c):,} transaction(s) of this product by this customer. "
-                   f"Comparison group: {others['customer_id'].nunique()} other customer(s), "
-                   f"{len(others):,} transaction(s).")
-        if others.empty:
-            st.warning("No other customers match this group for this product. "
-                       "Try another comparison group.")
-        else:
-            wf_o = waterfall(others)
-            kpi_row(wf_c, wf_o, ref_name)
-            cmp = compare_steps(wf_c, wf_o)
-            left, right = st.columns([3, 2])
-            with left:
-                st.plotly_chart(
-                    compare_chart(cmp, prof["customer_name"], ref_name.capitalize()),
-                    width="stretch")
-            with right:
-                tbl = pd.DataFrame({
-                    "Step": cmp["label"],
-                    "This customer (%)": cmp["selected"] * 100,
-                    "Comparison group (%)": cmp["reference"] * 100,
-                    "Difference (pp)": cmp["difference_pp"],
-                })
-                st.dataframe(tbl, hide_index=True, width="stretch",
-                             column_config={c: st.column_config.NumberColumn(format="%.2f")
-                                            for c in tbl.columns[1:]})
-                st.caption("Each step as % of list revenue; pp = percentage points. "
-                           "COGS is left out because it is a cost, not a price concession.")
-        with st.expander("This customer's full waterfall"):
-            st.plotly_chart(waterfall_chart(wf_c, height=480), width="stretch")
-
-st.divider()
-
-# ------------------------------------------------------ 4. transaction detail
-st.header("4. Transaction detail")
-st.caption("Open a single transaction to see its full waterfall and how it compares with "
-           "other transactions of the same product.")
-if customer is None:
-    st.info("Choose a product and a customer in steps 2 and 3 first.")
-else:
-    tx = df_c
-    view = tx[["transaction_id", "transaction_date", "quantity_units", "list_unit_price_cad",
-               "discount_rate", "leakage_rate", "price_override_used",
-               "pocket_margin_cad"]].copy()
-    view["transaction_date"] = pd.to_datetime(view["transaction_date"]).dt.date
-    view["discount_rate"] *= 100
-    view["leakage_rate"] *= 100
-    st.dataframe(view.rename(columns={"discount_rate": "discount_%",
-                                      "leakage_rate": "leakage_%"}),
-                 hide_index=True, width="stretch")
-
-    tx_id = st.selectbox("Transaction", list(tx["transaction_id"]), index=0,
-                         key=f"tx_{product}_{customer}")
-    row = tx[tx["transaction_id"] == tx_id]
-    t = row.iloc[0]
-    wf_t = waterfall(row)
-    kpi_row(wf_t, wf_p, "product avg")
-    st.plotly_chart(waterfall_chart(wf_t, height=520), width="stretch")
-
-    pct_lower = (df_p["discount_rate"] < t["discount_rate"]).mean()
-    lines = [
-        f"On-invoice discount **{t['discount_rate']:.1%}** vs product median "
-        f"**{df_p['discount_rate'].median():.1%}** — higher than {pct_lower:.0%} of this "
-        f"product's transactions.",
-        f"Total leakage **{t['leakage_rate']:.1%}** of list vs product median "
-        f"**{df_p['leakage_rate'].median():.1%}**.",
-        f"Quantity **{t['quantity_units']:,.0f}** vs product median "
-        f"**{df_p['quantity_units'].median():,.0f}**.",
-        f"Price override used: **{t['price_override_used']}**.",
-    ]
-    if t["pocket_margin_cad"] < 0:
-        lines.append(":red[Pocket margin is negative on this transaction.]")
-    st.markdown("**How this transaction compares with other transactions of this product:**")
-    st.markdown("\n".join(f"- {s}" for s in lines))
-    st.caption("These are comparisons with peers, not conclusions: a large order can "
-               "legitimately earn a bigger discount. Checking against contract terms is "
-               "the next step (Model 2).")
+        pct_lower = (df_p["discount_rate"] < t["discount_rate"]).mean()
+        lines = [
+            f"On-invoice discount **{t['discount_rate']:.1%}** vs product median "
+            f"**{df_p['discount_rate'].median():.1%}** — higher than {pct_lower:.0%} of this "
+            f"product's transactions.",
+            f"Total leakage **{t['leakage_rate']:.1%}** of list vs product median "
+            f"**{df_p['leakage_rate'].median():.1%}**.",
+            f"Quantity **{t['quantity_units']:,.0f}** vs product median "
+            f"**{df_p['quantity_units'].median():,.0f}**.",
+            f"Price override used: **{t['price_override_used']}**.",
+        ]
+        if t["pocket_margin_cad"] < 0:
+            lines.append(":red[Pocket margin is negative on this transaction.]")
+        st.markdown("**How this transaction compares with other transactions of this "
+                    "product:**")
+        st.markdown("\n".join(f"- {s}" for s in lines))
+        st.caption("These are comparisons with peers, not conclusions: a large order can "
+                   "legitimately earn a bigger discount. Checking against contract terms is "
+                   "the next step (Model 2).")
