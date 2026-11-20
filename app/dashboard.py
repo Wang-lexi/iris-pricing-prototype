@@ -97,6 +97,10 @@ st.sidebar.caption(f"{len(df):,} of {len(df_all):,} transactions selected")
 st.title("Pocket Price Waterfall")
 st.caption("Synthetic B2B manufacturing data, CAD, calendar year 2025. "
            "Four steps: 1 Company, 2 Product, 3 Customer, 4 Transaction.")
+st.markdown(
+    "**Jump to:** [1. Company overview](#1-company-overview) · [2. Product](#2-product) · "
+    "[3. Customer vs product](#3-customer-vs-product) · "
+    "[4. Transaction detail](#4-transaction-detail)")
 
 if df.empty:
     st.warning("No transactions match the current filters.")
@@ -165,34 +169,70 @@ if product is None:
 else:
     info = df_p.groupby("customer_id").first()
     customer = st.selectbox(
-        "Customer", sorted(df_p["customer_id"].unique()), index=None,
-        format_func=lambda c: f"{c} · {info.loc[c, 'customer_tier']} · {info.loc[c, 'industry']}",
-        placeholder="Choose a customer", key=f"customer_{product}")
+        "Customer company",
+        sorted(info.index, key=lambda c: info.loc[c, "customer_name"]),
+        index=None,
+        format_func=lambda c: (f"{info.loc[c, 'customer_name']} · {info.loc[c, 'industry']}"
+                               f" · {info.loc[c, 'customer_tier']}"),
+        placeholder="Choose a customer company", key=f"customer_{product}")
     if customer is None:
-        st.info("Choose a customer above to compare.")
+        st.info("Choose a customer company above to compare.")
     else:
+        prof = info.loc[customer]
+        st.markdown(
+            f"**{prof['customer_name']}** — **Industry:** {prof['industry']} · "
+            f"**Province:** {prof['province']} · **Tier:** {prof['customer_tier']} · "
+            f"**Channel:** {prof['sales_channel']} · "
+            f"**Customer for:** {prof['relationship_years']} yrs · "
+            f"**Annual revenue:** {prof['annual_revenue_band_cad']} CAD · "
+            f"**Payment terms:** {prof['payment_terms_days']} days")
+
+        groups = {
+            "All other customers of this product": None,
+            "Same industry": "industry",
+            "Same customer tier": "customer_tier",
+            "Same sales channel": "sales_channel",
+            "Same province": "province",
+        }
+        group = st.radio("Compare with", list(groups), horizontal=True,
+                         key=f"group_{product}_{customer}")
+        col = groups[group]
+        others = df_p[df_p["customer_id"] != customer]
+        if col is not None:
+            others = others[others[col] == prof[col]]
+            ref_name = f"other {prof[col]} customers"
+        else:
+            ref_name = "all other customers"
+
         df_c = df_p[df_p["customer_id"] == customer]
         wf_c = waterfall(df_c)
-        st.caption(f"{len(df_c):,} transaction(s) of this product by this customer.")
-        kpi_row(wf_c, wf_p, "all customers")
-        cmp = compare_steps(wf_c, wf_p)
-        left, right = st.columns([3, 2])
-        with left:
-            st.plotly_chart(
-                compare_chart(cmp, f"Customer {customer}", "All customers (this product)"),
-                width="stretch")
-        with right:
-            tbl = pd.DataFrame({
-                "Step": cmp["label"],
-                f"{customer} (%)": cmp["selected"] * 100,
-                "All customers (%)": cmp["reference"] * 100,
-                "Difference (pp)": cmp["difference_pp"],
-            })
-            st.dataframe(tbl, hide_index=True, width="stretch",
-                         column_config={c: st.column_config.NumberColumn(format="%.2f")
-                                        for c in tbl.columns[1:]})
-            st.caption("Each step as % of list revenue; pp = percentage points. "
-                       "COGS is left out because it is a cost, not a price concession.")
+        st.caption(f"{len(df_c):,} transaction(s) of this product by this customer. "
+                   f"Comparison group: {others['customer_id'].nunique()} other customer(s), "
+                   f"{len(others):,} transaction(s).")
+        if others.empty:
+            st.warning("No other customers match this group for this product. "
+                       "Try another comparison group.")
+        else:
+            wf_o = waterfall(others)
+            kpi_row(wf_c, wf_o, ref_name)
+            cmp = compare_steps(wf_c, wf_o)
+            left, right = st.columns([3, 2])
+            with left:
+                st.plotly_chart(
+                    compare_chart(cmp, prof["customer_name"], ref_name.capitalize()),
+                    width="stretch")
+            with right:
+                tbl = pd.DataFrame({
+                    "Step": cmp["label"],
+                    "This customer (%)": cmp["selected"] * 100,
+                    "Comparison group (%)": cmp["reference"] * 100,
+                    "Difference (pp)": cmp["difference_pp"],
+                })
+                st.dataframe(tbl, hide_index=True, width="stretch",
+                             column_config={c: st.column_config.NumberColumn(format="%.2f")
+                                            for c in tbl.columns[1:]})
+                st.caption("Each step as % of list revenue; pp = percentage points. "
+                           "COGS is left out because it is a cost, not a price concession.")
         with st.expander("This customer's full waterfall"):
             st.plotly_chart(waterfall_chart(wf_c, height=480), width="stretch")
 

@@ -17,8 +17,9 @@ ROOT = Path(__file__).resolve().parents[1]
 RAW_DIR = ROOT / "data" / "raw"
 OUT_PATH = ROOT / "data" / "processed" / "model1_waterfall_input.csv"
 
-CUSTOMER_COLS = ["customer_id", "customer_tier", "industry", "province",
-                 "sales_channel", "relationship_years"]
+CUSTOMER_COLS = ["customer_id", "customer_name", "customer_tier", "industry", "province",
+                 "sales_channel", "relationship_years", "annual_revenue_band_cad",
+                 "payment_terms_days"]
 PRODUCT_COLS = ["product_id", "product_category", "product_differentiation"]
 
 
